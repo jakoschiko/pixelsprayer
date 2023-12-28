@@ -3,9 +3,11 @@ mod color;
 mod image;
 mod position;
 
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
-use std::path::Path;
-use std::sync::Arc;
+use std::{
+    net::{IpAddr, Ipv4Addr, SocketAddr},
+    path::Path,
+    sync::Arc,
+};
 
 use anyhow::Result;
 use fastrand::Rng;

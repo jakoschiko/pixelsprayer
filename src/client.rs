@@ -41,8 +41,7 @@ impl Client {
                 }
             }
             Color::Rgb(r, g, b) => {
-                // TODO: support format without alpha
-                writeln!(&mut self.send_buffer, "PX {x} {y} {r:02x}{g:02x}{b:02x}ff")?
+                writeln!(&mut self.send_buffer, "PX {x} {y} {r:02x}{g:02x}{b:02x}")?
             }
             Color::Rgba(r, g, b, a) => writeln!(
                 &mut self.send_buffer,

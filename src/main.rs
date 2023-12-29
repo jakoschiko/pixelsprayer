@@ -48,6 +48,10 @@ struct Arguments {
     /// optimize grayscale RGB
     #[argh(switch)]
     optimize_grayscale_rgb: bool,
+
+    /// nodelay TCP
+    #[argh(switch)]
+    nodelay: bool,
 }
 
 #[tokio::main]
@@ -73,6 +77,7 @@ async fn main() -> Result<()> {
             image.clone(),
             offset,
             args.optimize_grayscale_rgb,
+            args.nodelay,
         ));
     }
     while let Some(result) = set.join_next().await {
@@ -92,10 +97,12 @@ async fn run_worker(
     image: Arc<Image>,
     offset: Position,
     optimize_grayscale_rgb: bool,
+    nodelay: bool,
 ) {
     // TODO: Improve logging
     loop {
-        let result = try_run_worker(id, host, &image, offset, optimize_grayscale_rgb).await;
+        let result =
+            try_run_worker(id, host, &image, offset, optimize_grayscale_rgb, nodelay).await;
 
         match result {
             Ok(()) => (),
@@ -112,10 +119,11 @@ async fn try_run_worker(
     image: &Image,
     offset: Position,
     optimize_grayscale_rgb: bool,
+    nodelay: bool,
 ) -> Result<()> {
     let mut rng = Rng::with_seed(id);
     println!("Worker {id}: Start connecting");
-    let mut client = Client::connect(host).await?;
+    let mut client = Client::connect(host, nodelay).await?;
     println!("Worker {id}: Start sending pixels");
     loop {
         let position = image.get_random_position(&mut rng);

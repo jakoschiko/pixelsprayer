@@ -11,8 +11,11 @@ pub struct Client {
 }
 
 impl Client {
-    pub async fn connect(host: SocketAddr) -> Result<Self> {
+    pub async fn connect(host: SocketAddr, nodelay: bool) -> Result<Self> {
         let stream = TcpStream::connect(host).await?;
+
+        stream.set_nodelay(nodelay)?;
+
         let send_buffer = Vec::new();
         Ok(Self {
             stream,

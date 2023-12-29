@@ -30,6 +30,7 @@ impl Client {
 
         let Position { x, y } = position;
         match color.normalize() {
+            Color::None => (),
             Color::Grayscale(c) => {
                 if optimize_grayscale_rgb {
                     writeln!(&mut self.send_buffer, "PX {x} {y} {c:02x}")?

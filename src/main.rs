@@ -75,14 +75,11 @@ async fn main() -> Result<()> {
             args.optimize_grayscale_rgb,
         ));
     }
-    while let Some(res) = set.join_next().await {
-        match res {
-            Ok(Ok(())) => (),
-            Ok(Err(error)) => {
-                println!("Task failed: {error}");
-            }
+    while let Some(result) = set.join_next().await {
+        match result {
+            Ok(()) => (),
             Err(error) => {
-                println!("Failed to join with service task: {error}");
+                println!("Failed to join with worker task: {error}");
             }
         }
     }
@@ -95,13 +92,31 @@ async fn run_worker(
     image: Arc<Image>,
     offset: Position,
     optimize_grayscale_rgb: bool,
-) -> Result<()> {
-    // TODO: Reconnect on error?
+) {
     // TODO: Improve logging
+    loop {
+        let result = try_run_worker(id, host, &image, offset, optimize_grayscale_rgb).await;
+
+        match result {
+            Ok(()) => (),
+            Err(error) => {
+                println!("Worker {id}: {error}");
+            }
+        }
+    }
+}
+
+async fn try_run_worker(
+    id: u64,
+    host: SocketAddr,
+    image: &Image,
+    offset: Position,
+    optimize_grayscale_rgb: bool,
+) -> Result<()> {
     let mut rng = Rng::with_seed(id);
-    println!("{id} Connecting");
+    println!("Worker {id}: Start connecting");
     let mut client = Client::connect(host).await?;
-    println!("{id} Start sending pixels");
+    println!("Worker {id}: Start sending pixels");
     loop {
         let position = image.get_random_position(&mut rng);
         if let Some(color) = image.get_color(position) {

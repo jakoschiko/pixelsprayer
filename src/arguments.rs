@@ -16,7 +16,7 @@ pub struct Arguments {
     pub image_path: String,
 
     /// worker count
-    #[argh(positional, default = "32")]
+    #[argh(positional, default = "3")]
     pub worker_count: u64,
 
     /// x offset
@@ -28,7 +28,7 @@ pub struct Arguments {
     pub y: u32,
 
     /// minimum bytes that will be written to TCP
-    #[argh(option, default = "1024")]
+    #[argh(option, default = "1400")]
     pub min_bytes_for_sending: u32,
 
     /// optimize grayscale RGB

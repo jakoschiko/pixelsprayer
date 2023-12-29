@@ -1,3 +1,4 @@
+mod arguments;
 mod client;
 mod color;
 mod image;
@@ -10,49 +11,13 @@ use std::{
 };
 
 use anyhow::Result;
-use argh::FromArgs;
+use arguments::Arguments;
 use fastrand::Rng;
 use image::Image;
 use position::Position;
 use tokio::task::JoinSet;
 
 use crate::client::Client;
-
-#[derive(FromArgs)]
-/// Pixelsprayer.
-struct Arguments {
-    /// host
-    #[argh(positional)]
-    host: String,
-
-    /// port
-    #[argh(positional)]
-    port: u16,
-
-    /// image (path)
-    #[argh(positional)]
-    image_path: String,
-
-    /// worker count
-    #[argh(positional, default = "32")]
-    worker_count: u64,
-
-    /// x offset
-    #[argh(option, default = "0")]
-    x: u32,
-
-    /// y offset
-    #[argh(option, default = "0")]
-    y: u32,
-
-    /// optimize grayscale RGB
-    #[argh(switch)]
-    optimize_grayscale_rgb: bool,
-
-    /// nodelay TCP
-    #[argh(switch)]
-    nodelay: bool,
-}
 
 #[tokio::main]
 async fn main() -> Result<()> {

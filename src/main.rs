@@ -41,6 +41,7 @@ async fn main() -> Result<()> {
             host,
             image.clone(),
             offset,
+            args.min_bytes_for_sending,
             args.optimize_grayscale_rgb,
             args.nodelay,
         ));
@@ -61,13 +62,22 @@ async fn run_worker(
     host: SocketAddr,
     image: Arc<Image>,
     offset: Position,
+    min_bytes_for_sending: u32,
     optimize_grayscale_rgb: bool,
     nodelay: bool,
 ) {
     // TODO: Improve logging
     loop {
-        let result =
-            try_run_worker(id, host, &image, offset, optimize_grayscale_rgb, nodelay).await;
+        let result = try_run_worker(
+            id,
+            host,
+            &image,
+            offset,
+            min_bytes_for_sending,
+            optimize_grayscale_rgb,
+            nodelay,
+        )
+        .await;
 
         match result {
             Ok(()) => (),
@@ -83,6 +93,7 @@ async fn try_run_worker(
     host: SocketAddr,
     image: &Image,
     offset: Position,
+    min_bytes_for_sending: u32,
     optimize_grayscale_rgb: bool,
     nodelay: bool,
 ) -> Result<()> {
@@ -93,9 +104,9 @@ async fn try_run_worker(
     loop {
         let position = image.get_random_position(&mut rng);
         if let Some(color) = image.get_color(position) {
-            client
-                .set_pixel(position.add(offset), color, optimize_grayscale_rgb)
-                .await?;
+            client.enqueue_pixel(position.add(offset), color, optimize_grayscale_rgb)?;
         }
+
+        client.progress(min_bytes_for_sending).await?;
     }
 }

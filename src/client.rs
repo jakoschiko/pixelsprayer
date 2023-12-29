@@ -1,13 +1,14 @@
-use std::{io::Write, net::SocketAddr};
+use std::{fmt::Write, net::SocketAddr};
 
-use anyhow::Result;
+use anyhow::{Error, Result};
+use bytes::BytesMut;
 use tokio::{io::AsyncWriteExt, net::TcpStream};
 
 use crate::{color::Color, position::Position};
 
 pub struct Client {
     stream: TcpStream,
-    send_buffer: Vec<u8>,
+    send_buffer: BytesMut,
 }
 
 impl Client {
@@ -16,21 +17,19 @@ impl Client {
 
         stream.set_nodelay(nodelay)?;
 
-        let send_buffer = Vec::new();
+        let send_buffer = BytesMut::new();
         Ok(Self {
             stream,
             send_buffer,
         })
     }
 
-    pub async fn set_pixel(
+    pub fn enqueue_pixel(
         &mut self,
         position: Position,
         color: Color,
         optimize_grayscale_rgb: bool,
     ) -> Result<()> {
-        self.send_buffer.clear();
-
         let Position { x, y } = position;
         match color.normalize() {
             Color::None => (),
@@ -51,8 +50,19 @@ impl Client {
             )?,
         };
 
-        self.stream.write_all(&self.send_buffer).await?;
+        Ok(())
+    }
 
+    pub async fn progress(&mut self, min_bytes_for_sending: u32) -> Result<()> {
+        while !self.send_buffer.is_empty()
+            && self.send_buffer.len() >= min_bytes_for_sending as usize
+        {
+            let written_bytes = self.stream.write_buf(&mut self.send_buffer).await?;
+
+            if written_bytes == 0 {
+                return Err(Error::msg("Connection closed"));
+            }
+        }
         Ok(())
     }
 }

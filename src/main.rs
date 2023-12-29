@@ -103,10 +103,10 @@ async fn run_worker(
     let mut client = Client::connect(host).await?;
     println!("{id} Start sending pixels");
     loop {
-        let position = offset.add(image.get_random_position(&mut rng));
+        let position = image.get_random_position(&mut rng);
         if let Some(color) = image.get_color(position) {
             client
-                .set_pixel(position, color, optimize_grayscale_rgb)
+                .set_pixel(position.add(offset), color, optimize_grayscale_rgb)
                 .await?;
         }
     }

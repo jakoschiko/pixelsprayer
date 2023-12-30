@@ -37,6 +37,10 @@ pub struct Arguments {
     #[argh(option)]
     pub bind: Option<SocketAddr>,
 
+    /// device
+    #[argh(option)]
+    pub device: Option<String>,
+
     /// nodelay TCP
     #[argh(switch)]
     pub nodelay: bool,

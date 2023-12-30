@@ -18,13 +18,24 @@ impl Client {
     pub async fn connect(
         connect: SocketAddr,
         bind: Option<SocketAddr>,
+        device: Option<String>,
         nodelay: bool,
     ) -> Result<Self> {
         let socket = TcpSocket::new_v4()?;
         if let Some(bind) = bind {
             socket.bind(bind)?;
-        };
+        }
+
+        socket.bind_device(device.as_ref().map(|s| s.as_bytes()))?;
+        println!("DEBUG: device={:?}", socket.device()?);
+
         let stream = socket.connect(connect).await?;
+
+        println!(
+            "DEBUG: local_addr={:?}, peer_addr={:?}",
+            stream.local_addr()?,
+            stream.peer_addr()?,
+        );
 
         stream.set_nodelay(nodelay)?;
 

@@ -54,7 +54,8 @@ async fn run_worker(id: u64, args: Arc<Arguments>, image: Arc<Image>) {
 async fn try_run_worker(id: u64, args: &Arguments, image: &Image) -> Result<()> {
     let mut rng = Rng::with_seed(id);
     println!("Worker {id}: Start connecting");
-    let mut client = Client::connect(args.connect, args.bind, args.nodelay).await?;
+    let mut client =
+        Client::connect(args.connect, args.bind, args.device.clone(), args.nodelay).await?;
     println!("Worker {id}: Start sending pixels");
     loop {
         let position = image.get_random_position(&mut rng);

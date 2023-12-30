@@ -1,15 +1,13 @@
+use std::net::SocketAddr;
+
 use argh::FromArgs;
 
 #[derive(FromArgs)]
 /// Pixelsprayer.
 pub struct Arguments {
-    /// host
+    /// connect
     #[argh(positional)]
-    pub host: String,
-
-    /// port
-    #[argh(positional)]
-    pub port: u16,
+    pub connect: SocketAddr,
 
     /// image (path)
     #[argh(positional)]
@@ -34,6 +32,10 @@ pub struct Arguments {
     /// optimize grayscale RGB
     #[argh(switch)]
     pub optimize_grayscale_rgb: bool,
+
+    /// bind
+    #[argh(option)]
+    pub bind: Option<SocketAddr>,
 
     /// nodelay TCP
     #[argh(switch)]

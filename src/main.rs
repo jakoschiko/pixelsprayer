@@ -4,11 +4,7 @@ mod color;
 mod image;
 mod position;
 
-use std::{
-    net::{SocketAddr, ToSocketAddrs},
-    path::Path,
-    sync::Arc,
-};
+use std::{net::SocketAddr, path::Path, sync::Arc};
 
 use anyhow::Result;
 use arguments::Arguments;
@@ -23,10 +19,6 @@ use crate::client::Client;
 async fn main() -> Result<()> {
     let args: Arguments = argh::from_env();
 
-    let host: SocketAddr = format!("{}:{}", args.host, args.port)
-        .as_str()
-        .to_socket_addrs()?
-        .collect::<Vec<_>>()[0];
     let image_path = Path::new(&args.image_path);
     let offset = Position {
         x: args.x,
@@ -38,11 +30,12 @@ async fn main() -> Result<()> {
     for id in 0..args.worker_count {
         set.spawn(run_worker(
             id,
-            host,
+            args.connect,
             image.clone(),
             offset,
             args.min_bytes_for_sending,
             args.optimize_grayscale_rgb,
+            args.bind,
             args.nodelay,
         ));
     }
@@ -59,22 +52,24 @@ async fn main() -> Result<()> {
 
 async fn run_worker(
     id: u64,
-    host: SocketAddr,
+    connect: SocketAddr,
     image: Arc<Image>,
     offset: Position,
     min_bytes_for_sending: u32,
     optimize_grayscale_rgb: bool,
+    bind: Option<SocketAddr>,
     nodelay: bool,
 ) {
     // TODO: Improve logging
     loop {
         let result = try_run_worker(
             id,
-            host,
+            connect,
             &image,
             offset,
             min_bytes_for_sending,
             optimize_grayscale_rgb,
+            bind,
             nodelay,
         )
         .await;
@@ -90,16 +85,17 @@ async fn run_worker(
 
 async fn try_run_worker(
     id: u64,
-    host: SocketAddr,
+    connect: SocketAddr,
     image: &Image,
     offset: Position,
     min_bytes_for_sending: u32,
     optimize_grayscale_rgb: bool,
+    bind: Option<SocketAddr>,
     nodelay: bool,
 ) -> Result<()> {
     let mut rng = Rng::with_seed(id);
     println!("Worker {id}: Start connecting");
-    let mut client = Client::connect(host, nodelay).await?;
+    let mut client = Client::connect(connect, bind, nodelay).await?;
     println!("Worker {id}: Start sending pixels");
     loop {
         let position = image.get_random_position(&mut rng);

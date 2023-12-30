@@ -2,7 +2,10 @@ use std::{fmt::Write, net::SocketAddr};
 
 use anyhow::{Error, Result};
 use bytes::BytesMut;
-use tokio::{io::AsyncWriteExt, net::TcpStream};
+use tokio::{
+    io::AsyncWriteExt,
+    net::{TcpSocket, TcpStream},
+};
 
 use crate::{color::Color, position::Position};
 
@@ -12,8 +15,16 @@ pub struct Client {
 }
 
 impl Client {
-    pub async fn connect(host: SocketAddr, nodelay: bool) -> Result<Self> {
-        let stream = TcpStream::connect(host).await?;
+    pub async fn connect(
+        connect: SocketAddr,
+        bind: Option<SocketAddr>,
+        nodelay: bool,
+    ) -> Result<Self> {
+        let socket = TcpSocket::new_v4()?;
+        if let Some(bind) = bind {
+            socket.bind(bind)?;
+        };
+        let stream = socket.connect(connect).await?;
 
         stream.set_nodelay(nodelay)?;
 

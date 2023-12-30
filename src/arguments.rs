@@ -5,11 +5,19 @@ use argh::FromArgs;
 #[derive(FromArgs)]
 /// Pixelsprayer.
 pub struct Arguments {
-    /// connect
+    /// assign specific address to the socket (`ip address`)
+    #[argh(option)]
+    pub bind: Option<SocketAddr>,
+
+    /// use specific device (interface, link) (`ip link`)
+    #[argh(option)]
+    pub device: Option<String>,
+
+    /// connect to host
     #[argh(positional)]
     pub connect: SocketAddr,
 
-    /// image (path)
+    /// path to image (PNG)
     #[argh(positional)]
     pub image_path: String,
 
@@ -33,15 +41,7 @@ pub struct Arguments {
     #[argh(switch)]
     pub disable_grayscale_support: bool,
 
-    /// bind
-    #[argh(option)]
-    pub bind: Option<SocketAddr>,
-
-    /// device
-    #[argh(option)]
-    pub device: Option<String>,
-
-    /// nodelay TCP
+    /// use TCP_NODELAY (to disable Nagle's algorithm)
     #[argh(switch)]
-    pub nodelay: bool,
+    pub tcp_nodelay: bool,
 }

@@ -19,7 +19,7 @@ impl Client {
         connect: SocketAddr,
         bind: Option<SocketAddr>,
         device: Option<String>,
-        nodelay: bool,
+        tcp_nodelay: bool,
     ) -> Result<Self> {
         let socket = TcpSocket::new_v4()?;
         if let Some(bind) = bind {
@@ -37,7 +37,7 @@ impl Client {
             stream.peer_addr()?,
         );
 
-        stream.set_nodelay(nodelay)?;
+        stream.set_nodelay(tcp_nodelay)?;
 
         let send_buffer = BytesMut::new();
         Ok(Self {

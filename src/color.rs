@@ -7,8 +7,9 @@ pub enum Color {
 }
 
 impl Color {
-    pub fn normalize(self) -> Self {
+    pub fn normalize(self, disable_grayscale_support: bool) -> Self {
         match self {
+            Color::Grayscale(c) if disable_grayscale_support => Color::Rgb(c, c, c),
             Color::Rgb(r, g, b) if r == g && r == b => Color::Grayscale(r),
             Color::Rgba(r, g, b, 255) if r == g && r == b => Color::Grayscale(r),
             Color::Rgba(r, g, b, 255) => Color::Rgb(r, g, b),

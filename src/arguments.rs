@@ -29,9 +29,9 @@ pub struct Arguments {
     #[argh(option, default = "1400")]
     pub min_bytes_for_sending: u32,
 
-    /// optimize grayscale RGB
+    /// convert grayscale to RGB
     #[argh(switch)]
-    pub optimize_grayscale_rgb: bool,
+    pub disable_grayscale_support: bool,
 
     /// bind
     #[argh(option)]

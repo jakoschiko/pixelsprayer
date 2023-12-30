@@ -35,22 +35,11 @@ impl Client {
         })
     }
 
-    pub fn enqueue_pixel(
-        &mut self,
-        position: Position,
-        color: Color,
-        optimize_grayscale_rgb: bool,
-    ) -> Result<()> {
+    pub fn enqueue_pixel(&mut self, position: Position, color: Color) -> Result<()> {
         let Position { x, y } = position;
-        match color.normalize() {
+        match color {
             Color::None => (),
-            Color::Grayscale(c) => {
-                if optimize_grayscale_rgb {
-                    writeln!(&mut self.send_buffer, "PX {x} {y} {c:02x}")?
-                } else {
-                    writeln!(&mut self.send_buffer, "PX {x} {y} {c:02x}{c:02x}{c:02x}")?
-                }
-            }
+            Color::Grayscale(c) => writeln!(&mut self.send_buffer, "PX {x} {y} {c:02x}")?,
             Color::Rgb(r, g, b) => {
                 writeln!(&mut self.send_buffer, "PX {x} {y} {r:02x}{g:02x}{b:02x}")?
             }
